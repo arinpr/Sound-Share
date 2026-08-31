@@ -77,8 +77,8 @@ class AppTheme {
           return AppColors.disabled;
         }),
       ),
-      pageTransitionsTheme: PageTransitionsTheme(
-        builders: const {
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
         },
       ),

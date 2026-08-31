@@ -53,7 +53,7 @@ class AppGradients {
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purple.withOpacity(0.35),
+            color: AppColors.purple.withValues(alpha: 0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

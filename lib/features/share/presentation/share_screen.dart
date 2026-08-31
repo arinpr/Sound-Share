@@ -29,8 +29,7 @@ class ShareScreen extends ConsumerWidget {
     final sharingState = ref.watch(audioSharingStateProvider);
     final sharingDuration = ref.watch(sharingDurationProvider);
 
-    final btEnabled =
-        btAdapterState.valueOrNull == BluetoothAdapterState.on;
+    final btEnabled = btAdapterState.valueOrNull == BluetoothAdapterState.on;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -355,18 +354,18 @@ class _BluetoothOffBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.errorLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.error.withOpacity(0.2)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           const Icon(Icons.bluetooth_disabled_rounded,
               color: AppColors.error, size: 22),
           const SizedBox(width: 12),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Bluetooth is turned off',
                   style: TextStyle(
                     fontSize: 13,
@@ -374,7 +373,7 @@ class _BluetoothOffBanner extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const Text(
+                Text(
                   'Turn on Bluetooth to find audio devices.',
                   style: TextStyle(
                     fontSize: 11,

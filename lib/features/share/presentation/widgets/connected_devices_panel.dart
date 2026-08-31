@@ -32,14 +32,14 @@ class ConnectedDevicesPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: _isSharing
-              ? AppColors.purple.withOpacity(0.25)
+              ? AppColors.purple.withValues(alpha: 0.25)
               : AppColors.cardBorder,
           width: _isSharing ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: _isSharing
-                ? AppColors.purple.withOpacity(0.08)
+                ? AppColors.purple.withValues(alpha: 0.08)
                 : AppColors.cardShadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -94,8 +94,8 @@ class ConnectedDevicesPanel extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 'Sharing audio',
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.success),
+                style:
+                    AppTextStyles.bodyMedium.copyWith(color: AppColors.success),
               ),
             ],
           ),

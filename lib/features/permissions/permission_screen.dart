@@ -49,7 +49,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
               Container(
                 width: 88,
                 height: 88,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.purpleLight,
                   shape: BoxShape.circle,
                 ),
@@ -80,18 +80,20 @@ class _PermissionScreenState extends State<PermissionScreen> {
               const SizedBox(height: 36),
 
               // Permission items
-              _PermissionTile(
+              const _PermissionTile(
                 icon: Icons.bluetooth_searching_rounded,
                 title: 'Nearby Bluetooth Devices',
-                subtitle: 'Discover and connect to additional headphones and speakers',
+                subtitle:
+                    'Discover and connect to additional headphones and speakers',
               ),
 
               const SizedBox(height: 16),
 
-              _PermissionTile(
+              const _PermissionTile(
                 icon: Icons.notifications_active_outlined,
                 title: 'Foreground Notifications',
-                subtitle: 'Keep audio stream alive in background and show session controls',
+                subtitle:
+                    'Keep audio stream alive in background and show session controls',
               ),
 
               const Spacer(flex: 2),
@@ -163,11 +165,11 @@ class _PermissionTile extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.cardShadow,
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),

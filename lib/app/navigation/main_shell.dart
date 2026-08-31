@@ -48,8 +48,8 @@ class _SoundShareBottomNav extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: AppColors.divider, width: 1),
+        border: const Border(
+          top: const BorderSide(color: AppColors.divider, width: 1),
         ),
         boxShadow: [
           BoxShadow(
@@ -175,9 +175,7 @@ class _ShareNavIcon extends CustomPainter {
     // Inner arcs
     canvas.drawArc(
       Rect.fromCenter(
-          center: Offset(w * 0.5, h * 0.5),
-          width: w * 0.45,
-          height: h * 0.45),
+          center: Offset(w * 0.5, h * 0.5), width: w * 0.45, height: h * 0.45),
       2.4,
       -1.7,
       false,
@@ -185,9 +183,7 @@ class _ShareNavIcon extends CustomPainter {
     );
     canvas.drawArc(
       Rect.fromCenter(
-          center: Offset(w * 0.5, h * 0.5),
-          width: w * 0.45,
-          height: h * 0.45),
+          center: Offset(w * 0.5, h * 0.5), width: w * 0.45, height: h * 0.45),
       0.74,
       -1.7,
       false,
@@ -197,9 +193,7 @@ class _ShareNavIcon extends CustomPainter {
     // Outer arcs
     canvas.drawArc(
       Rect.fromCenter(
-          center: Offset(w * 0.5, h * 0.5),
-          width: w * 0.8,
-          height: h * 0.8),
+          center: Offset(w * 0.5, h * 0.5), width: w * 0.8, height: h * 0.8),
       2.7,
       -2.0,
       false,
@@ -207,9 +201,7 @@ class _ShareNavIcon extends CustomPainter {
     );
     canvas.drawArc(
       Rect.fromCenter(
-          center: Offset(w * 0.5, h * 0.5),
-          width: w * 0.8,
-          height: h * 0.8),
+          center: Offset(w * 0.5, h * 0.5), width: w * 0.8, height: h * 0.8),
       0.44,
       -2.0,
       false,

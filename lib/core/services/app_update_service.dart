@@ -35,7 +35,8 @@ class AppUpdateService {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -44,7 +45,7 @@ class AppUpdateService {
                   Container(
                     width: 64,
                     height: 64,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.purpleLight,
                       shape: BoxShape.circle,
                     ),

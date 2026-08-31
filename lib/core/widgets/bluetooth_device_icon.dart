@@ -34,7 +34,7 @@ class BluetoothDeviceIcon extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             color: isConnected
-                ? AppColors.success.withOpacity(0.3)
+                ? AppColors.success.withValues(alpha: 0.3)
                 : AppColors.cardBorder,
             width: 1,
           ),
@@ -102,7 +102,7 @@ class _EarbudsPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     final fill = Paint()
-      ..color = color.withOpacity(0.15)
+      ..color = color.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
 
     final w = size.width;
@@ -207,8 +207,8 @@ class _SpeakerPainter extends CustomPainter {
 
     // Woofer circle
     canvas.drawCircle(Offset(w * 0.5, h * 0.55), w * 0.2, paint);
-    canvas.drawCircle(Offset(w * 0.5, h * 0.55), w * 0.08,
-        paint..style = PaintingStyle.fill);
+    canvas.drawCircle(
+        Offset(w * 0.5, h * 0.55), w * 0.08, paint..style = PaintingStyle.fill);
 
     paint
       ..style = PaintingStyle.stroke

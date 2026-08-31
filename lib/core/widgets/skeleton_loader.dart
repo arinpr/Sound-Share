@@ -81,21 +81,21 @@ class BluetoothDeviceSkeletonCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.cardShadow,
             blurRadius: 10,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
-      child: Row(
+      child: const Row(
         children: [
           // Icon skeleton
-          const SkeletonLoader(width: 48, height: 48, borderRadius: 14),
-          const SizedBox(width: 12),
+          SkeletonLoader(width: 48, height: 48, borderRadius: 14),
+          SizedBox(width: 12),
           // Texts skeleton
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -105,9 +105,9 @@ class BluetoothDeviceSkeletonCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           // Button skeleton
-          const SkeletonLoader(width: 68, height: 32, borderRadius: 10),
+          SkeletonLoader(width: 68, height: 32, borderRadius: 10),
         ],
       ),
     );

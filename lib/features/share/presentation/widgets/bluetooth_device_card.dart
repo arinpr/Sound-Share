@@ -79,8 +79,7 @@ class _BluetoothDeviceCardState extends ConsumerState<BluetoothDeviceCard>
   Future<void> _connect() async {
     HapticFeedback.lightImpact();
 
-    final discoveredNotifier =
-        ref.read(discoveredDevicesProvider.notifier);
+    final discoveredNotifier = ref.read(discoveredDevicesProvider.notifier);
     final connectedNotifier = ref.read(connectedDevicesProvider.notifier);
 
     discoveredNotifier.updateDeviceState(
@@ -117,23 +116,23 @@ class _BluetoothDeviceCardState extends ConsumerState<BluetoothDeviceCard>
         discoveredNotifier.updateDeviceState(
             widget.device.id, DeviceConnectionState.available);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Couldn't connect",
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                const Text(
+                Text(
                   'Make sure the device is nearby and try again.',
                   style: TextStyle(fontSize: 12),
                 ),
               ],
             ),
             backgroundColor: AppColors.textPrimary,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -183,20 +182,18 @@ class _BluetoothDeviceCardState extends ConsumerState<BluetoothDeviceCard>
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: _isConnected
-            ? AppColors.successLight
-            : Colors.white,
+        color: _isConnected ? AppColors.successLight : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isConnected
-              ? AppColors.success.withOpacity(0.35)
+              ? AppColors.success.withValues(alpha: 0.35)
               : AppColors.cardBorder,
           width: _isConnected ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: _isConnected
-                ? AppColors.success.withOpacity(0.08)
+                ? AppColors.success.withValues(alpha: 0.08)
                 : AppColors.cardShadow,
             blurRadius: 10,
             offset: const Offset(0, 3),
@@ -339,12 +336,12 @@ class _OutlinedActionButtonState extends State<_OutlinedActionButton> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
             color: widget.onTap != null
-                ? widget.color.withOpacity(0.08)
+                ? widget.color.withValues(alpha: 0.08)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: widget.onTap != null
-                  ? widget.color.withOpacity(0.4)
+                  ? widget.color.withValues(alpha: 0.4)
                   : AppColors.disabled,
             ),
           ),

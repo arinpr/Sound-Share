@@ -62,18 +62,18 @@ class _AudioFlowAnimationState extends State<AudioFlowAnimation>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Source device (your earbuds)
-          Column(
+          const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              BluetoothDeviceIcon(
+              const BluetoothDeviceIcon(
                 type: BluetoothDeviceType.earbuds,
                 size: 28,
                 isConnected: true,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 'Your device',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 9,
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w500,
@@ -113,7 +113,8 @@ class _AudioFlowAnimationState extends State<AudioFlowAnimation>
                         boxShadow: widget.isSharing
                             ? [
                                 BoxShadow(
-                                  color: AppColors.success.withOpacity(0.35),
+                                  color:
+                                      AppColors.success.withValues(alpha: 0.35),
                                   blurRadius: 12,
                                   spreadRadius: 2,
                                 ),
@@ -195,14 +196,14 @@ class _FlowLinePainter extends CustomPainter {
       // Trailing particle
       final opacity = (math.sin(offset * math.pi)).clamp(0.0, 1.0);
       final particlePaint = Paint()
-        ..color = AppColors.purple.withOpacity(opacity * 0.9)
+        ..color = AppColors.purple.withValues(alpha: opacity * 0.9)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(Offset(particleX, centerY), 3.0, particlePaint);
 
       // Glow
       final glowPaint = Paint()
-        ..color = AppColors.blue.withOpacity(opacity * 0.3)
+        ..color = AppColors.blue.withValues(alpha: opacity * 0.3)
         ..style = PaintingStyle.fill
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
       canvas.drawCircle(Offset(particleX, centerY), 6.0, glowPaint);
