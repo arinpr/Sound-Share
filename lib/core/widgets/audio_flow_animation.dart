@@ -61,18 +61,18 @@ class _AudioFlowAnimationState extends State<AudioFlowAnimation>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Source device (your earbuds)
+          // Source device (this phone)
           const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const BluetoothDeviceIcon(
-                type: BluetoothDeviceType.earbuds,
+              BluetoothDeviceIcon(
+                type: BluetoothDeviceType.phone,
                 size: 28,
                 isConnected: true,
               ),
               SizedBox(height: 4),
               Text(
-                'Your device',
+                'This phone',
                 style: TextStyle(
                   fontSize: 9,
                   color: AppColors.textMuted,

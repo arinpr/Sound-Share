@@ -5,6 +5,7 @@ enum BluetoothDeviceType {
   speaker,
   carAudio,
   audioDevice,
+  phone,
   unknown,
 }
 
@@ -85,6 +86,8 @@ BluetoothDeviceType deviceTypeFromClass(int? majorDeviceClass) {
   switch (majorDeviceClass) {
     case 0x0100: // AUDIO_VIDEO — further refined by minor class
       return BluetoothDeviceType.audioDevice;
+    case 0x0200: // PHONE
+      return BluetoothDeviceType.phone;
     default:
       return BluetoothDeviceType.unknown;
   }

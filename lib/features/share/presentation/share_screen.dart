@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:soundshare/core/constants/app_assets.dart';
-import 'package:soundshare/core/widgets/skeleton_loader.dart';
 import 'package:soundshare/core/utils/app_haptics.dart';
+import 'package:soundshare/core/widgets/skeleton_loader.dart';
 import 'package:soundshare/app/theme/app_colors.dart';
 import 'package:soundshare/app/theme/app_text_styles.dart';
 import 'package:soundshare/core/widgets/animated_widgets.dart';
@@ -37,9 +35,7 @@ class ShareScreen extends ConsumerWidget {
         child: Column(
           children: [
             // ── Header ──────────────────────────────
-            _AppHeader(
-              onSettings: () => context.go('/settings'),
-            ),
+            const _AppHeader(),
 
             // ── Scrollable content ───────────────────
             Expanded(
@@ -132,8 +128,7 @@ class ShareScreen extends ConsumerWidget {
 // ──────────────────────────────────────────────
 
 class _AppHeader extends StatelessWidget {
-  const _AppHeader({required this.onSettings});
-  final VoidCallback onSettings;
+  const _AppHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -161,39 +156,6 @@ class _AppHeader extends StatelessWidget {
                 Text('SoundShare', style: AppTextStyles.headingMedium),
                 Text('Connect multiple devices', style: AppTextStyles.tagline),
               ],
-            ),
-          ),
-
-          // Settings button
-          Semantics(
-            label: 'Settings',
-            button: true,
-            child: GestureDetector(
-              onTap: () {
-                AppHaptics.light();
-                onSettings();
-              },
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.cardBorder),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: AppColors.cardShadow,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.settings_outlined,
-                  size: 18,
-                  color: AppColors.textSecondary,
-                ),
-              ),
             ),
           ),
         ],
@@ -312,31 +274,6 @@ class _EmptyDevicesCard extends StatelessWidget {
   }
 }
 
-class _ScanningPlaceholder extends StatelessWidget {
-  const _ScanningPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: const Center(
-        child: Column(
-          children: [
-            ScanningAnimation(size: 28, color: AppColors.purple),
-            SizedBox(height: 12),
-            Text(
-              'Searching for nearby Bluetooth devices...',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ──────────────────────────────────────────────
 // Bluetooth off banner

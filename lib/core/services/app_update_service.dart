@@ -11,7 +11,7 @@ class AppUpdateService {
   /// In a live Play Store deployment, this queries the In-App Update API or your backend version endpoint.
   static Future<void> checkForUpdates(BuildContext context) async {
     try {
-      final info = await PackageInfo.fromPlatform();
+      await PackageInfo.fromPlatform();
       // Future-proof hook: check if remote version > current version
       // When deployed to Play Store, this integrates with Android In-App Updates
     } catch (_) {}

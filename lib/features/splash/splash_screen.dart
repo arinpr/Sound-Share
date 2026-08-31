@@ -85,17 +85,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     }
   }
 
-  Future<void> _requestPermissions() async {
-    // Request Bluetooth and notification permissions
-    await [
-      Permission.bluetooth,
-      Permission.bluetoothScan,
-      Permission.bluetoothConnect,
-      Permission.bluetoothAdvertise,
-      Permission.notification,
-    ].request();
-  }
-
   @override
   void dispose() {
     _logoController.dispose();
