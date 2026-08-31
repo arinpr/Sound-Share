@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/animation.dart';
 
 /// Room environment types that alter reflection and reverb spatial processing.
 enum RoomType {
@@ -154,6 +155,30 @@ class SpatialAudioPosition {
       z: (map['z'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  static SpatialAudioPosition lerp(
+    SpatialAudioPosition? a,
+    SpatialAudioPosition? b,
+    double t,
+  ) {
+    if (a == null && b == null) return const SpatialAudioPosition();
+    if (a == null) return b!;
+    if (b == null) return a;
+    return SpatialAudioPosition(
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+      z: a.z + (b.z - a.z) * t,
+    );
+  }
+}
+
+/// Tween for animating [SpatialAudioPosition] values.
+class SpatialAudioPositionTween extends Tween<SpatialAudioPosition> {
+  SpatialAudioPositionTween({super.begin, super.end});
+
+  @override
+  SpatialAudioPosition lerp(double t) =>
+      SpatialAudioPosition.lerp(begin, end, t);
 }
 
 /// Hardware and OS spatial audio capabilities.

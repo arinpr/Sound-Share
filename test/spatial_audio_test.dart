@@ -53,6 +53,22 @@ void main() {
       expect(restored.y, closeTo(original.y, 0.001));
       expect(restored.z, closeTo(original.z, 0.001));
     });
+
+    test('Interpolates smoothly with SpatialAudioPosition.lerp and Tween', () {
+      const start = SpatialAudioPosition(x: -1.0, y: 0.0, z: 0.0);
+      const end = SpatialAudioPosition(x: 1.0, y: 0.8, z: 0.4);
+
+      final mid = SpatialAudioPosition.lerp(start, end, 0.5);
+      expect(mid.x, closeTo(0.0, 0.001));
+      expect(mid.y, closeTo(0.4, 0.001));
+      expect(mid.z, closeTo(0.2, 0.001));
+
+      final tween = SpatialAudioPositionTween(begin: start, end: end);
+      final interpolated = tween.lerp(0.25);
+      expect(interpolated.x, closeTo(-0.5, 0.001));
+      expect(interpolated.y, closeTo(0.2, 0.001));
+      expect(interpolated.z, closeTo(0.1, 0.001));
+    });
   });
 
   group('Spatial Audio Presets & Settings', () {

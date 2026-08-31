@@ -1,26 +1,27 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:soundshare/app/theme/app_colors.dart';
-import 'package:soundshare/app/theme/app_text_styles.dart';
 import 'package:soundshare/core/utils/app_haptics.dart';
 import '../../domain/spatial_audio_models.dart';
 
-/// Interactive 3D Spatial Audio Sound Visualizer.
-/// Allows the user to drag the virtual sound source around the listener in real-time.
+/// Pixel-perfect 3D Spatial Audio Sound Visualizer.
+/// Renders 3D elliptical particle horizon, wireframe soundstage rings,
+/// perimeter transducer pods, listener bust avatar, and glowing draggable sound node.
 class SpatialSoundVisualizer extends StatefulWidget {
   const SpatialSoundVisualizer({
     super.key,
     required this.position,
     required this.isEnabled,
     required this.onPositionChanged,
+    this.isDark = true,
     this.headYaw = 0.0,
     this.isTesting = false,
-    this.height = 290,
+    this.height = 300,
   });
 
   final SpatialAudioPosition position;
   final bool isEnabled;
   final ValueChanged<SpatialAudioPosition> onPositionChanged;
+  final bool isDark;
   final double headYaw;
   final bool isTesting;
   final double height;
@@ -39,7 +40,7 @@ class _SpatialSoundVisualizerState extends State<SpatialSoundVisualizer>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2400),
     )..repeat();
   }
 
@@ -49,250 +50,384 @@ class _SpatialSoundVisualizerState extends State<SpatialSoundVisualizer>
     super.dispose();
   }
 
-  void _handlePanUpdate(Offset localOffset, Size size) {
+  void _handlePan(Offset localOffset, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = math.min(size.width, size.height) * 0.42;
+    final radiusX = size.width * 0.40;
+    final radiusY = size.height * 0.38;
 
-    // Convert local offset relative to center
-    final dx = (localOffset.dx - center.dx) / radius;
-    final dy = (center.dy - localOffset.dy) / radius; // Invert Y so Up is +Y (Front)
+    double dx = (localOffset.dx - center.dx) / radiusX;
+    double dy = (center.dy - localOffset.dy) / radiusY; // Up is +Y (Front)
 
-    // Clamp inside circular acoustic field
-    final distance = math.sqrt(dx * dx + dy * dy);
-    double clampedX = dx;
-    double clampedDy = dy;
-    if (distance > 1.0) {
-      clampedX = dx / distance;
-      clampedDy = dy / distance;
+    final dist = math.sqrt(dx * dx + dy * dy);
+    if (dist > 1.0) {
+      dx /= dist;
+      dy /= dist;
     }
 
     widget.onPositionChanged(
-      widget.position.copyWith(x: clampedX, y: clampedDy),
+      widget.position.copyWith(x: dx.clamp(-1.0, 1.0), y: dy.clamp(-1.0, 1.0)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, widget.height);
+        final center = Offset(size.width / 2, size.height / 2);
+        final radiusX = size.width * 0.40;
+        final radiusY = size.height * 0.38;
 
-    return Semantics(
-      label: widget.position.toAccessibleLabel(),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final size = Size(constraints.maxWidth, widget.height);
-          final radius = math.min(size.width, size.height) * 0.42;
-          final center = Offset(size.width / 2, size.height / 2);
+        final nodeOffset = Offset(
+          center.dx + widget.position.x * radiusX,
+          center.dy - widget.position.y * radiusY,
+        );
 
-          // Node position on screen
-          final nodeOffset = Offset(
-            center.dx + widget.position.x * radius,
-            center.dy - widget.position.y * radius,
-          );
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanStart: (details) {
+            setState(() => _isDragging = true);
+            AppHaptics.selection();
+            _handlePan(details.localPosition, size);
+          },
+          onPanUpdate: (details) {
+            _handlePan(details.localPosition, size);
+          },
+          onPanEnd: (_) {
+            setState(() => _isDragging = false);
+            AppHaptics.light();
+          },
+          child: SizedBox(
+            width: size.width,
+            height: size.height,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // 1. Canvas 3D Elliptical Horizon & Field Painter
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, _) {
+                    return CustomPaint(
+                      size: size,
+                      painter: _Spatial3DStagePainter(
+                        position: widget.position,
+                        isEnabled: widget.isEnabled,
+                        isDark: widget.isDark,
+                        headYaw: widget.headYaw,
+                        pulseValue: _pulseController.value,
+                        isDragging: _isDragging,
+                      ),
+                    );
+                  },
+                ),
 
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onPanStart: (details) {
-              setState(() => _isDragging = true);
-              AppHaptics.selection();
-              _handlePanUpdate(details.localPosition, size);
-            },
-            onPanUpdate: (details) {
-              _handlePanUpdate(details.localPosition, size);
-            },
-            onPanEnd: (_) {
-              setState(() => _isDragging = false);
-              AppHaptics.light();
-            },
-            child: SizedBox(
-              width: size.width,
-              height: size.height,
-              child: Stack(
-                children: [
-                  // Canvas background & soundstage visualizer
-                  AnimatedBuilder(
-                    animation: _pulseController,
-                    builder: (context, _) {
-                      return CustomPaint(
-                        size: size,
-                        painter: _SpatialStagePainter(
-                          position: widget.position,
-                          isEnabled: widget.isEnabled,
-                          isDark: isDark,
-                          headYaw: widget.headYaw,
-                          pulseValue: _pulseController.value,
-                          isDragging: _isDragging,
-                          isTesting: widget.isTesting,
-                        ),
-                      );
-                    },
-                  ),
+                // 2. Speaker/Transducer Pods positioned on the mid soundstage ring
+                // FRONT Pod
+                _buildSpeakerPod(
+                  top: center.dy - radiusY * 0.65 - 14,
+                  left: center.dx - 14,
+                  icon: Icons.speaker_rounded,
+                ),
+                // BACK Pod
+                _buildSpeakerPod(
+                  top: center.dy + radiusY * 0.65 - 14,
+                  left: center.dx - 14,
+                  icon: Icons.speaker_rounded,
+                ),
+                // LEFT Pod
+                _buildSpeakerPod(
+                  top: center.dy - 14,
+                  left: center.dx - radiusX * 0.65 - 14,
+                  icon: Icons.speaker_group_rounded,
+                ),
+                // RIGHT Pod
+                _buildSpeakerPod(
+                  top: center.dy - 14,
+                  left: center.dx + radiusX * 0.65 - 14,
+                  icon: Icons.speaker_group_rounded,
+                ),
 
-                  // Draggable Node Interactive Touch Target
-                  Positioned(
-                    left: nodeOffset.dx - 22,
-                    top: nodeOffset.dy - 22,
-                    child: _SoundNodeWidget(
-                      isEnabled: widget.isEnabled,
-                      isDragging: _isDragging,
-                      isTesting: widget.isTesting,
-                      isDark: isDark,
-                    ),
-                  ),
-
-                  // Top Front / Back / Left / Right labels
-                  Positioned(
-                    top: 10,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Text(
+                // 3. Direction HUD labels with subtle chevrons at outer perimeter
+                Positioned(
+                  top: 6,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      Text(
                         'FRONT',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 10,
+                        style: TextStyle(
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
-                          color: isDark
-                              ? const Color(0xFF8B8A9E)
-                              : AppColors.textMuted,
+                          color: widget.isDark
+                              ? const Color(0xFF9E77ED)
+                              : const Color(0xFF7A5AF8),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 1),
+                      Icon(
+                        Icons.keyboard_arrow_up_rounded,
+                        size: 13,
+                        color: widget.isDark
+                            ? const Color(0xFF9E77ED)
+                            : const Color(0xFF7A5AF8),
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 10,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Text(
+                ),
+                Positioned(
+                  bottom: 6,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 13,
+                        color: widget.isDark
+                            ? const Color(0xFF757388)
+                            : const Color(0xFF9E9AB5),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
                         'BACK',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 10,
+                        style: TextStyle(
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
-                          color: isDark
-                              ? const Color(0xFF8B8A9E)
-                              : AppColors.textMuted,
+                          color: widget.isDark
+                              ? const Color(0xFF757388)
+                              : const Color(0xFF9E9AB5),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    left: 10,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: Text(
-                        'LEFT',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                          color: isDark
-                              ? const Color(0xFF8B8A9E)
-                              : AppColors.textMuted,
+                ),
+                Positioned(
+                  left: 6,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.chevron_left_rounded,
+                          size: 13,
+                          color: widget.isDark
+                              ? const Color(0xFF757388)
+                              : const Color(0xFF9E9AB5),
                         ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: Text(
-                        'RIGHT',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                          color: isDark
-                              ? const Color(0xFF8B8A9E)
-                              : AppColors.textMuted,
+                        Text(
+                          'LEFT',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                            color: widget.isDark
+                                ? const Color(0xFF757388)
+                                : const Color(0xFF9E9AB5),
+                          ),
                         ),
-                      ),
+                        Icon(
+                          Icons.chevron_left_rounded,
+                          size: 13,
+                          color: widget.isDark
+                              ? const Color(0xFF757388)
+                              : const Color(0xFF9E9AB5),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  right: 6,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 13,
+                          color: widget.isDark
+                              ? const Color(0xFF757388)
+                              : const Color(0xFF9E9AB5),
+                        ),
+                        Text(
+                          'RIGHT',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                            color: widget.isDark
+                                ? const Color(0xFF757388)
+                                : const Color(0xFF9E9AB5),
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 13,
+                          color: widget.isDark
+                              ? const Color(0xFF757388)
+                              : const Color(0xFF9E9AB5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // 4. Interactive Sound Node (Purple Glowing Sphere with concentric waves)
+                Positioned(
+                  left: nodeOffset.dx - 24,
+                  top: nodeOffset.dy - 24,
+                  child: _GlowingSoundNode(
+                    isEnabled: widget.isEnabled,
+                    isDragging: _isDragging,
+                    isDark: widget.isDark,
+                  ),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSpeakerPod({
+    required double top,
+    required double left,
+    required IconData icon,
+  }) {
+    return Positioned(
+      top: top,
+      left: left,
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: widget.isDark
+              ? const Color(0xFF141320).withValues(alpha: 0.8)
+              : Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: widget.isDark
+                ? const Color(0xFF2B2844)
+                : const Color(0xFFE4E0F4),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: widget.isDark ? 0.3 : 0.06),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          size: 14,
+          color: widget.isDark
+              ? const Color(0xFF7D7A94)
+              : const Color(0xFF9E9AB5),
+        ),
       ),
     );
   }
 }
 
-class _SoundNodeWidget extends StatelessWidget {
-  const _SoundNodeWidget({
+/// Floating Purple Glowing Sound Node with core and expanding rings.
+class _GlowingSoundNode extends StatelessWidget {
+  const _GlowingSoundNode({
     required this.isEnabled,
     required this.isDragging,
-    required this.isTesting,
     required this.isDark,
   });
 
   final bool isEnabled;
   final bool isDragging;
-  final bool isTesting;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: isDragging ? 1.25 : (isTesting ? 1.15 : 1.0),
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.easeOutBack,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: isEnabled
-              ? const LinearGradient(
-                  colors: [AppColors.purpleLight, AppColors.blue],
-                )
-              : LinearGradient(
-                  colors: [
-                    isDark ? const Color(0xFF333148) : AppColors.disabled,
-                    isDark ? const Color(0xFF2B293E) : AppColors.disabledText,
-                  ],
-                ),
-          boxShadow: isEnabled
-              ? [
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outer halo
+          if (isEnabled)
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
                   BoxShadow(
-                    color: AppColors.purple.withValues(alpha: 0.45),
-                    blurRadius: 16,
-                    spreadRadius: 2,
+                    color: const Color(0xFF9E77ED).withValues(alpha: 0.6),
+                    blurRadius: 18,
+                    spreadRadius: isDragging ? 5 : 2,
                   ),
                   BoxShadow(
-                    color: AppColors.blue.withValues(alpha: 0.35),
-                    blurRadius: 8,
+                    color: const Color(0xFF53B1FD).withValues(alpha: 0.4),
+                    blurRadius: 10,
                   ),
-                ]
-              : [],
-          border: Border.all(color: Colors.white, width: 2.5),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.spatial_audio_rounded,
-            size: 20,
-            color: Colors.white,
+                ],
+              ),
+            ),
+
+          // Central orb
+          AnimatedScale(
+            scale: isDragging ? 1.2 : 1.0,
+            duration: const Duration(milliseconds: 140),
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isEnabled
+                    ? const RadialGradient(
+                        colors: [
+                          Colors.white,
+                          Color(0xFFB4A1FF),
+                          Color(0xFF7A5AF8),
+                        ],
+                        stops: [0.0, 0.45, 1.0],
+                      )
+                    : RadialGradient(
+                        colors: isDark
+                            ? [const Color(0xFF55536D), const Color(0xFF262438)]
+                            : [const Color(0xFFD6D4E8), const Color(0xFF9E9AB5)],
+                      ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(color: Colors.white, width: 2.0),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _SpatialStagePainter extends CustomPainter {
-  _SpatialStagePainter({
+/// CustomPainter that renders the exact 3D elliptical horizon wireframe dome,
+/// particle field, dashed vector ray, and center 3D listener avatar bust.
+class _Spatial3DStagePainter extends CustomPainter {
+  _Spatial3DStagePainter({
     required this.position,
     required this.isEnabled,
     required this.isDark,
     required this.headYaw,
     required this.pulseValue,
     required this.isDragging,
-    required this.isTesting,
   });
 
   final SpatialAudioPosition position;
@@ -301,175 +436,196 @@ class _SpatialStagePainter extends CustomPainter {
   final double headYaw;
   final double pulseValue;
   final bool isDragging;
-  final bool isTesting;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final maxRadius = math.min(size.width, size.height) * 0.42;
+    final radiusX = size.width * 0.40;
+    final radiusY = size.height * 0.38;
 
-    // 1. Concentric acoustic field rings
+    // 1. Background atmospheric glow
+    final bgGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          (isEnabled ? const Color(0xFF7A5AF8) : const Color(0xFF333148))
+              .withValues(alpha: isDark ? 0.08 : 0.06),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radiusX * 1.2));
+    canvas.drawCircle(center, radiusX * 1.2, bgGlow);
+
+    // 2. 3D Elliptical Wireframe Soundstage Rings
     final ringPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
+      ..strokeWidth = 0.9
       ..color = isDark
-          ? const Color(0xFF26243A)
-          : AppColors.cardBorder.withValues(alpha: 0.9);
+          ? const Color(0xFF242238).withValues(alpha: 0.9)
+          : const Color(0xFFE4E0F5);
 
-    final ringFractions = [0.35, 0.68, 1.0];
-    for (final frac in ringFractions) {
-      canvas.drawCircle(center, maxRadius * frac, ringPaint);
+    // Outer ellipse
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: radiusX * 2.0, height: radiusY * 2.0),
+      ringPaint,
+    );
+    // Mid ellipse
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: radiusX * 1.35, height: radiusY * 1.35),
+      ringPaint,
+    );
+    // Inner center ellipse
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: radiusX * 0.70, height: radiusY * 0.70),
+      ringPaint,
+    );
+
+    // 3. 3D Elliptical Particle Horizon Mesh (Front & Back particle arcs)
+    final meshPaint = Paint()..style = PaintingStyle.fill;
+    const particleCount = 72;
+    for (int i = 0; i < particleCount; i++) {
+      final angle = (i / particleCount) * 2 * math.pi;
+      final px = center.dx + radiusX * math.cos(angle);
+      final py = center.dy + radiusY * math.sin(angle);
+
+      // Height modulation creating 3D wave dome effect
+      final waveMod = math.sin(angle * 3 + pulseValue * 2 * math.pi) * 3.5;
+      final pointY = py + waveMod;
+
+      final isFront = math.sin(angle) > 0;
+      final alpha = (0.25 + 0.6 * math.cos(angle).abs()).clamp(0.1, 0.9);
+
+      meshPaint.color = (isFront ? const Color(0xFF7A5AF8) : const Color(0xFF53B1FD))
+          .withValues(alpha: isDark ? alpha : alpha * 0.7);
+
+      canvas.drawCircle(Offset(px, pointY), 1.2, meshPaint);
     }
 
-    // 2. Crosshair axis lines
+    // 4. Subtle Crosshair Dashed Axes
     final axisPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = isDark
-          ? const Color(0xFF1E1D2D)
-          : AppColors.cardBorder.withValues(alpha: 0.6);
+      ..strokeWidth = 0.8
+      ..color = isDark ? const Color(0xFF201E32) : const Color(0xFFEDEAF8);
 
     canvas.drawLine(
-      Offset(center.dx - maxRadius, center.dy),
-      Offset(center.dx + maxRadius, center.dy),
+      Offset(center.dx - radiusX, center.dy),
+      Offset(center.dx + radiusX, center.dy),
       axisPaint,
     );
     canvas.drawLine(
-      Offset(center.dx, center.dy - maxRadius),
-      Offset(center.dx, center.dy + maxRadius),
+      Offset(center.dx, center.dy - radiusY),
+      Offset(center.dx, center.dy + radiusY),
       axisPaint,
     );
 
-    // 3. Node position
     final nodeOffset = Offset(
-      center.dx + position.x * maxRadius,
-      center.dy - position.y * maxRadius,
+      center.dx + position.x * radiusX,
+      center.dy - position.y * radiusY,
     );
 
-    // 4. Vector Ray / Direction line from listener to sound source
+    // 5. Dashed Connection Vector Ray (Listener ➔ Sound Node)
     if (isEnabled) {
       final rayPaint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
-        ..shader = LinearGradient(
-          colors: [
-            AppColors.purple.withValues(alpha: 0.2),
-            AppColors.blue.withValues(alpha: 0.8),
-          ],
-        ).createShader(Rect.fromPoints(center, nodeOffset));
+        ..strokeWidth = 1.4
+        ..color = const Color(0xFF9E77ED).withValues(alpha: 0.85);
 
-      canvas.drawLine(center, nodeOffset, rayPaint);
+      // Draw dashed line
+      const dashWidth = 4.0;
+      const dashGap = 3.5;
+      final totalDist = (nodeOffset - center).distance;
+      final dx = (nodeOffset.dx - center.dx) / totalDist;
+      final dy = (nodeOffset.dy - center.dy) / totalDist;
 
-      // Sound wave ripples radiating from node
+      double d = 0;
+      while (d < totalDist) {
+        final start = Offset(center.dx + dx * d, center.dy + dy * d);
+        final end = Offset(
+          center.dx + dx * math.min(d + dashWidth, totalDist),
+          center.dy + dy * math.min(d + dashWidth, totalDist),
+        );
+        canvas.drawLine(start, end, rayPaint);
+        d += dashWidth + dashGap;
+      }
+
+      // Expanding concentric sound ripples around active node
       for (int i = 0; i < 3; i++) {
-        final rippleFrac = (pulseValue + i / 3.0) % 1.0;
-        final rippleRadius = 22 + rippleFrac * 36;
-        final opacity = (1.0 - rippleFrac).clamp(0.0, 1.0) * 0.4;
+        final prog = (pulseValue + i / 3.0) % 1.0;
+        final waveR = 14.0 + prog * 36.0;
+        final alpha = (1.0 - prog).clamp(0.0, 1.0) * 0.45;
 
         final wavePaint = Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5
-          ..color = AppColors.purpleLight.withValues(alpha: opacity);
+          ..strokeWidth = 1.2 * (1.0 - prog * 0.5)
+          ..color = const Color(0xFFB4A1FF).withValues(alpha: alpha);
 
-        canvas.drawCircle(nodeOffset, rippleRadius, wavePaint);
+        canvas.drawCircle(nodeOffset, waveR, wavePaint);
       }
     }
 
-    // 5. Center Listener ("YOU") Head + Headphones Representation
+    // 6. Center 3D Listener Avatar Bust ("YOU")
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    canvas.rotate(-headYaw); // Rotate head according to orientation sensor
+    canvas.rotate(-headYaw);
 
-    // Listener glow
-    final listenerGlow = Paint()
-      ..color = (isEnabled ? AppColors.purple : AppColors.textMuted)
-          .withValues(alpha: 0.12)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-    canvas.drawCircle(Offset.zero, 24, listenerGlow);
+    // Subtle ambient glow beneath head
+    final headGlow = Paint()
+      ..color = const Color(0xFF7A5AF8).withValues(alpha: isDark ? 0.25 : 0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    canvas.drawCircle(Offset.zero, 18, headGlow);
 
-    // Listener circle
-    final listenerPaint = Paint()
-      ..color = isDark ? const Color(0xFF26243A) : const Color(0xFFEFEEFC)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset.zero, 20, listenerPaint);
-
-    final listenerBorder = Paint()
-      ..color = isEnabled ? AppColors.purple : AppColors.disabled
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    canvas.drawCircle(Offset.zero, 20, listenerBorder);
-
-    // Left & Right Headphone Cushions
-    final earPaint = Paint()
-      ..color = isEnabled ? AppColors.purple : AppColors.disabled
+    // Listener Shoulder Bust (gradient arc)
+    final shoulderPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF9E77ED), Color(0xFF6941C6)],
+      ).createShader(const Rect.fromLTWH(-16, 2, 32, 14))
       ..style = PaintingStyle.fill;
 
-    // Left Ear
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(-25, -7, 6, 14),
-        const Radius.circular(3),
-      ),
-      earPaint,
-    );
-    // Right Ear
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(19, -7, 6, 14),
-        const Radius.circular(3),
-      ),
-      earPaint,
-    );
-
-    // Headphone headband arch
-    final archPaint = Paint()
-      ..color = isEnabled ? AppColors.purple : AppColors.disabled
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    canvas.drawArc(
-      const Rect.fromLTWH(-22, -22, 44, 44),
-      math.pi,
-      math.pi,
-      false,
-      archPaint,
-    );
-
-    // Nose direction point (indicates FRONT)
-    final nosePath = Path()
-      ..moveTo(0, -22)
-      ..lineTo(-3, -17)
-      ..lineTo(3, -17)
+    final shoulderPath = Path()
+      ..moveTo(-15, 14)
+      ..quadraticBezierTo(-12, 4, -6, 2)
+      ..lineTo(6, 2)
+      ..quadraticBezierTo(12, 4, 15, 14)
       ..close();
-    canvas.drawPath(nosePath, earPaint);
+    canvas.drawPath(shoulderPath, shoulderPaint);
+
+    // Listener Head (glossy sphere)
+    final headPaint = Paint()
+      ..shader = const RadialGradient(
+        center: Alignment(-0.3, -0.4),
+        colors: [
+          Color(0xFFE9D7FE),
+          Color(0xFFB4A1FF),
+          Color(0xFF7A5AF8),
+        ],
+        stops: [0.0, 0.45, 1.0],
+      ).createShader(const Rect.fromLTWH(-8, -13, 16, 16));
+
+    canvas.drawOval(
+      const Rect.fromLTWH(-7.5, -13, 15, 16),
+      headPaint,
+    );
+
+    // Head border
+    final headBorder = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = Colors.white.withValues(alpha: 0.8);
+    canvas.drawOval(
+      const Rect.fromLTWH(-7.5, -13, 15, 16),
+      headBorder,
+    );
 
     canvas.restore();
-
-    // "YOU" Text in center
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: 'YOU',
-        style: TextStyle(
-          fontSize: 8,
-          fontWeight: FontWeight.w700,
-          color: isDark ? Colors.white : AppColors.textPrimary,
-          letterSpacing: 0.5,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(
-      canvas,
-      Offset(center.dx - textPainter.width / 2, center.dy - textPainter.height / 2),
-    );
   }
 
   @override
-  bool shouldRepaint(_SpatialStagePainter old) =>
+  bool shouldRepaint(_Spatial3DStagePainter old) =>
       old.position != position ||
       old.isEnabled != isEnabled ||
       old.isDark != isDark ||
       old.headYaw != headYaw ||
       old.pulseValue != pulseValue ||
-      old.isDragging != isDragging ||
-      old.isTesting != isTesting;
+      old.isDragging != isDragging;
 }
