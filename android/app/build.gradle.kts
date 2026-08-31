@@ -25,7 +25,7 @@ android {
     defaultConfig {
         applicationId = "com.soundshare.soundshare"
         minSdk = flutter.minSdkVersion
-        targetSdk = 34
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
