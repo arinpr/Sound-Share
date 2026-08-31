@@ -10,6 +10,7 @@ import '../../../features/bluetooth/domain/bluetooth_providers.dart';
 import '../../../features/audio_sharing/domain/audio_sharing_providers.dart';
 import '../../../features/audio_sharing/domain/audio_sharing_service.dart';
 import 'package:soundshare/core/utils/app_haptics.dart';
+import '../../../features/beatsync/domain/beatsync_providers.dart';
 import 'widgets/about_soundshare_sheet.dart';
 
 // ──────────────────────────────────────────────
@@ -142,6 +143,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ? AppColors.success
                                   : AppColors.textMuted,
                               fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        _Divider(),
+                        InkWell(
+                          onTap: () {
+                            AppHaptics.light();
+                            context.push('/beatsync');
+                          },
+                          child: _SettingsRow(
+                            icon: Icons.vibration_rounded,
+                            iconColor: AppColors.purple,
+                            label: 'BeatSync',
+                            subtitle: 'Feel the music through vibrations',
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  ref.watch(beatSyncSettingsProvider).enabled
+                                      ? 'On'
+                                      : 'Off',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: ref.watch(beatSyncSettingsProvider).enabled
+                                        ? AppColors.purple
+                                        : AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 18,
+                                  color: AppColors.textMuted,
+                                ),
+                              ],
                             ),
                           ),
                         ),

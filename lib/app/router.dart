@@ -3,6 +3,7 @@ import 'package:soundshare/features/splash/splash_screen.dart';
 import 'package:soundshare/features/permissions/permission_screen.dart';
 import 'package:soundshare/features/share/presentation/share_screen.dart';
 import 'package:soundshare/features/settings/presentation/settings_screen.dart';
+import 'package:soundshare/features/beatsync/presentation/beatsync_screen.dart';
 import 'package:soundshare/app/navigation/main_shell.dart';
 
 final appRouter = GoRouter(
@@ -18,6 +19,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/permissions',
       builder: (context, state) => const PermissionScreen(),
+    ),
+
+    // BeatSync Screen
+    GoRoute(
+      path: '/beatsync',
+      builder: (context, state) => const BeatSyncScreen(),
     ),
 
     // Main shell with bottom nav

@@ -6,15 +6,64 @@ import android.media.AudioManager
 import android.os.Build
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
     private val audioChannel = "com.soundshare/audio"
     private val btChannel = "com.soundshare/bluetooth"
+    private val beatSyncChannel = "com.soundshare/beatsync"
+    private val beatSyncEventsChannel = "com.soundshare/beatsync_events"
+
+    private var beatSyncEngine: BeatSyncNativeEngine? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        beatSyncEngine = BeatSyncNativeEngine(applicationContext)
+
+        // BeatSync Event Channel
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, beatSyncEventsChannel)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    beatSyncEngine?.setEventSink(events)
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    beatSyncEngine?.setEventSink(null)
+                }
+            })
+
+        // BeatSync Method Channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, beatSyncChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getCapabilities" -> {
+                        result.success(beatSyncEngine?.getCapabilities() ?: emptyMap<String, Any>())
+                    }
+                    "startBeatSync" -> {
+                        val success = beatSyncEngine?.startAnalysis() ?: false
+                        result.success(success)
+                    }
+                    "stopBeatSync" -> {
+                        beatSyncEngine?.stopAnalysis()
+                        result.success(true)
+                    }
+                    "updateSettings" -> {
+                        val intensity = call.argument<Double>("intensity") ?: 1.0
+                        val sensitivity = call.argument<Double>("sensitivity") ?: 1.0
+                        val bass = call.argument<Double>("bass") ?: 1.0
+                        beatSyncEngine?.updateSettings(intensity, sensitivity, bass)
+                        result.success(true)
+                    }
+                    "testPulse" -> {
+                        beatSyncEngine?.triggerTestPulse()
+                        result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
 
         // Audio method channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, audioChannel)
@@ -136,5 +185,10 @@ class MainActivity : FlutterActivity() {
             // Return empty list on any error
         }
         return devices
+    }
+
+    override fun onDestroy() {
+        beatSyncEngine?.stopAnalysis()
+        super.onDestroy()
     }
 }

@@ -15,6 +15,7 @@ import 'widgets/connected_audio_card.dart';
 import 'widgets/bluetooth_device_card.dart';
 import 'widgets/connected_devices_panel.dart';
 import 'widgets/share_audio_button.dart';
+import '../../beatsync/presentation/widgets/beatsync_card.dart';
 
 class ShareScreen extends ConsumerWidget {
   const ShareScreen({super.key});
@@ -68,6 +69,11 @@ class ShareScreen extends ConsumerWidget {
                         isConnected: btEnabled,
                       ),
 
+                      const SizedBox(height: 14),
+
+                      // BeatSync Feature Card
+                      const BeatSyncCard(),
+
                       const SizedBox(height: 20),
 
                       // Bluetooth devices section
@@ -98,7 +104,10 @@ class ShareScreen extends ConsumerWidget {
                       const SizedBox(height: 24),
                     ],
 
-                    if (!btEnabled) const SizedBox(height: 24),
+                    if (!btEnabled) ...[
+                      const BeatSyncCard(),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 ),
               ),
