@@ -94,10 +94,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.splashBackground,
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? AppGradients.splashBackgroundDark
+              : AppGradients.splashBackground,
         ),
         child: SafeArea(
           child: Column(
@@ -122,7 +128,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.purple.withValues(alpha: 0.25),
+                                  color: AppColors.purple.withValues(
+                                    alpha: isDark ? 0.45 : 0.25,
+                                  ),
                                   blurRadius: 30,
                                   offset: const Offset(0, 12),
                                 ),
@@ -178,7 +186,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         isSharing: true,
                         height: 56,
                         barCount: 36,
-                        color: AppColors.purple.withValues(alpha: 0.75),
+                        color: isDark
+                            ? AppColors.purpleLight
+                            : AppColors.purple.withValues(alpha: 0.75),
                       ),
                     ),
                   );

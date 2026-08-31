@@ -23,24 +23,27 @@ class ConnectedDevicesPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: _isSharing
-              ? AppColors.purple.withValues(alpha: 0.25)
-              : AppColors.cardBorder,
+              ? AppColors.purple.withValues(alpha: 0.4)
+              : (isDark ? const Color(0xFF2B293E) : AppColors.cardBorder),
           width: _isSharing ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: _isSharing
-                ? AppColors.purple.withValues(alpha: 0.08)
-                : AppColors.cardShadow,
+                ? AppColors.purple.withValues(alpha: 0.12)
+                : (isDark ? Colors.black.withValues(alpha: 0.25) : AppColors.cardShadow),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

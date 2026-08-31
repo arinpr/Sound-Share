@@ -16,6 +16,8 @@ import 'widgets/bluetooth_device_card.dart';
 import 'widgets/connected_devices_panel.dart';
 import 'widgets/share_audio_button.dart';
 import '../../beatsync/presentation/widgets/beatsync_card.dart';
+import '../../../app/theme/theme_provider.dart';
+import '../../../core/widgets/theme_toggle_button.dart';
 
 class ShareScreen extends ConsumerWidget {
   const ShareScreen({super.key});
@@ -32,7 +34,7 @@ class ShareScreen extends ConsumerWidget {
     final btEnabled = btAdapterState.valueOrNull == BluetoothAdapterState.on;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -169,6 +171,9 @@ class _AppHeader extends StatelessWidget {
               ],
             ),
           ),
+
+          // Animated 3D Dark/Light mode toggle
+          const ThemeToggleIconButton(),
         ],
       ),
     );
@@ -251,12 +256,16 @@ class _BluetoothDevicesSection extends StatelessWidget {
 class _EmptyDevicesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2B293E) : AppColors.cardBorder,
+        ),
       ),
       child: Column(
         children: [

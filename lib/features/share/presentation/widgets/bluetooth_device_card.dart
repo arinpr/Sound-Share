@@ -176,73 +176,186 @@ class _BluetoothDeviceCardState extends ConsumerState<BluetoothDeviceCard>
   }
 
   Widget _cardContent() {
+    final isMuted = widget.device.isMuted;
+    final volume = isMuted ? 0.0 : widget.device.volumeLevel;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final connectedBg = isDark
+        ? const Color(0xFF132B25)
+        : AppColors.successLight.withValues(alpha: 0.7);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 350),
       curve: Curves.easeInOut,
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: _isConnected ? AppColors.successLight : Colors.white,
+        color: _isConnected ? connectedBg : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isConnected
-              ? AppColors.success.withValues(alpha: 0.35)
-              : AppColors.cardBorder,
+              ? AppColors.success.withValues(alpha: 0.4)
+              : (isDark ? const Color(0xFF2B293E) : AppColors.cardBorder),
           width: _isConnected ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: _isConnected
                 ? AppColors.success.withValues(alpha: 0.08)
-                : AppColors.cardShadow,
+                : (isDark ? Colors.black.withValues(alpha: 0.2) : AppColors.cardShadow),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Device icon with optional success pulse
-          if (_showSuccess)
-            PulseIndicator(
-              size: 52,
-              color: AppColors.success,
-              child: BluetoothDeviceIcon(
-                type: widget.device.type,
-                size: 26,
-                isConnected: true,
-              ),
-            )
-          else
-            BluetoothDeviceIcon(
-              type: widget.device.type,
-              size: 26,
-              isConnected: _isConnected,
-            ),
-
-          const SizedBox(width: 12),
-
-          // Name and status
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.device.name,
-                  style: AppTextStyles.labelLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              // Device icon with optional success pulse
+              if (_showSuccess)
+                PulseIndicator(
+                  size: 52,
+                  color: AppColors.success,
+                  child: BluetoothDeviceIcon(
+                    type: widget.device.type,
+                    size: 26,
+                    isConnected: true,
+                  ),
+                )
+              else
+                BluetoothDeviceIcon(
+                  type: widget.device.type,
+                  size: 26,
+                  isConnected: _isConnected,
                 ),
-                const SizedBox(height: 2),
-                _statusText(),
-              ],
-            ),
+
+              const SizedBox(width: 12),
+
+              // Name and status
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.device.name,
+                      style: AppTextStyles.labelLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    _statusText(),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Action button
+              _actionWidget(),
+            ],
           ),
 
-          const SizedBox(width: 8),
+          // Individual Sound & Volume Control when connected
+          if (_isConnected) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1B1A28) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Mute / Unmute Button
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      ref
+                          .read(connectedDevicesProvider.notifier)
+                          .toggleMute(widget.device.id);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: isMuted
+                            ? AppColors.error.withValues(alpha: 0.12)
+                            : AppColors.purple.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        isMuted
+                            ? Icons.volume_off_rounded
+                            : (volume > 0.5
+                                ? Icons.volume_up_rounded
+                                : Icons.volume_down_rounded),
+                        size: 18,
+                        color: isMuted ? AppColors.error : AppColors.purple,
+                      ),
+                    ),
+                  ),
 
-          // Action button
-          _actionWidget(),
+                  const SizedBox(width: 6),
+
+                  // Individual Volume Slider
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 4,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 7,
+                          pressedElevation: 2,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 14,
+                        ),
+                        activeTrackColor: isMuted
+                            ? AppColors.disabled
+                            : AppColors.purple,
+                        inactiveTrackColor: AppColors.cardBorder,
+                        thumbColor: isMuted
+                            ? AppColors.disabled
+                            : AppColors.purple,
+                        overlayColor: AppColors.purple.withValues(alpha: 0.12),
+                      ),
+                      child: Slider(
+                        value: volume,
+                        onChanged: isMuted
+                            ? null
+                            : (val) {
+                                ref
+                                    .read(connectedDevicesProvider.notifier)
+                                    .updateVolume(widget.device.id, val);
+                              },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  // Volume Percentage Label
+                  SizedBox(
+                    width: 38,
+                    child: Text(
+                      isMuted ? 'Mute' : '${(volume * 100).toInt()}%',
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isMuted
+                            ? AppColors.error
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

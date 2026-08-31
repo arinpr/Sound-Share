@@ -44,6 +44,8 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, _) {
@@ -55,11 +57,17 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
             gradient: LinearGradient(
               begin: Alignment(_animation.value - 1, 0),
               end: Alignment(_animation.value + 1, 0),
-              colors: [
-                AppColors.cardBorder.withValues(alpha: 0.3),
-                Colors.white.withValues(alpha: 0.8),
-                AppColors.cardBorder.withValues(alpha: 0.3),
-              ],
+              colors: isDark
+                  ? [
+                      const Color(0xFF1F1D2F),
+                      const Color(0xFF2E2B42),
+                      const Color(0xFF1F1D2F),
+                    ]
+                  : [
+                      AppColors.cardBorder.withValues(alpha: 0.3),
+                      Colors.white.withValues(alpha: 0.8),
+                      AppColors.cardBorder.withValues(alpha: 0.3),
+                    ],
             ),
           ),
         );
@@ -74,18 +82,25 @@ class BluetoothDeviceSkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: const [
+        border: Border.all(
+          color: isDark ? const Color(0xFF2B293E) : AppColors.cardBorder,
+        ),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.cardShadow,
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.2)
+                : AppColors.cardShadow,
             blurRadius: 10,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),

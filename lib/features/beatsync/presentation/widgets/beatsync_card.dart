@@ -17,22 +17,24 @@ class BeatSyncCard extends ConsumerWidget {
     final status = ref.watch(beatSyncStatusProvider);
     final isEnabled = settings.enabled;
     final isActivelyVibrating = status == BeatSyncStatus.active;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isEnabled
-              ? AppColors.purple.withValues(alpha: 0.3)
-              : AppColors.cardBorder,
+              ? AppColors.purple.withValues(alpha: 0.4)
+              : (isDark ? const Color(0xFF2B293E) : AppColors.cardBorder),
           width: isEnabled ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isEnabled
-                ? AppColors.purple.withValues(alpha: 0.08)
-                : AppColors.cardShadow,
+                ? AppColors.purple.withValues(alpha: 0.12)
+                : (isDark ? Colors.black.withValues(alpha: 0.25) : AppColors.cardShadow),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

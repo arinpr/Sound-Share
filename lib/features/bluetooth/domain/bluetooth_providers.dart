@@ -164,6 +164,20 @@ class ConnectedDevicesNotifier
         if (d.id == id) d.copyWith(batteryLevel: batteryLevel) else d,
     ];
   }
+
+  void updateVolume(String id, double volume) {
+    state = [
+      for (final d in state)
+        if (d.id == id) d.copyWith(volumeLevel: volume.clamp(0.0, 1.0)) else d,
+    ];
+  }
+
+  void toggleMute(String id) {
+    state = [
+      for (final d in state)
+        if (d.id == id) d.copyWith(isMuted: !d.isMuted) else d,
+    ];
+  }
 }
 
 // ──────────────────────────────────────────────

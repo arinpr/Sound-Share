@@ -89,10 +89,12 @@ class _AudioFlowAnimationState extends State<AudioFlowAnimation>
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, _) {
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
                   return CustomPaint(
                     painter: _FlowLinePainter(
                       progress: _controller.value,
                       isSharing: widget.isSharing,
+                      isDark: isDark,
                     ),
                     size: Size.infinite,
                   );
@@ -156,10 +158,15 @@ class _AudioFlowAnimationState extends State<AudioFlowAnimation>
 }
 
 class _FlowLinePainter extends CustomPainter {
-  _FlowLinePainter({required this.progress, required this.isSharing});
+  _FlowLinePainter({
+    required this.progress,
+    required this.isSharing,
+    required this.isDark,
+  });
 
   final double progress;
   final bool isSharing;
+  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -168,7 +175,7 @@ class _FlowLinePainter extends CustomPainter {
 
     // Base dashed line
     final dashPaint = Paint()
-      ..color = AppColors.cardBorder
+      ..color = isDark ? const Color(0xFF333148) : AppColors.cardBorder
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -212,5 +219,7 @@ class _FlowLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_FlowLinePainter old) =>
-      old.progress != progress || old.isSharing != isSharing;
+      old.progress != progress ||
+      old.isSharing != isSharing ||
+      old.isDark != isDark;
 }

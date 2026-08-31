@@ -44,24 +44,26 @@ class _SoundShareBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(
-          color: AppColors.cardBorder,
-          width: 1,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF2B293E) : AppColors.cardBorder,
+            width: 1,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purple.withValues(alpha: 0.06),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.35)
+                : AppColors.purple.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, -6),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, -2),
           ),
         ],
       ),

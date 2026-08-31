@@ -22,17 +22,24 @@ class ConnectedAudioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: const [
+        border: Border.all(
+          color: isDark ? const Color(0xFF2B293E) : AppColors.cardBorder,
+        ),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.cardShadow,
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : AppColors.cardShadow,
             blurRadius: 12,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),

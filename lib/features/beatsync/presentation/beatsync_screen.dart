@@ -62,9 +62,11 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
     final status = ref.watch(beatSyncStatusProvider);
     final capsAsync = ref.watch(hapticCapabilitiesProvider);
     final isEnabled = settings.enabled;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -75,7 +77,7 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                    color: AppColors.textPrimary,
+                    color: theme.colorScheme.onSurface,
                     onPressed: () {
                       AppHaptics.light();
                       context.pop();
@@ -104,11 +106,10 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 48),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
 
                     // Main Synchronized Waveform Visualizer
                     BeatSyncVisualizer(
@@ -145,14 +146,18 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
 
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.cardBorder),
-                        boxShadow: const [
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF2B293E) : AppColors.cardBorder,
+                        ),
+                        boxShadow: [
                           BoxShadow(
-                            color: AppColors.cardShadow,
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.25)
+                                : AppColors.cardShadow,
                             blurRadius: 10,
-                            offset: Offset(0, 3),
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -173,7 +178,10 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
                             },
                           ),
 
-                          const Divider(height: 24, color: AppColors.divider),
+                          Divider(
+                            height: 24,
+                            color: isDark ? const Color(0xFF2B293E) : AppColors.divider,
+                          ),
 
                           // Beat Sensitivity
                           _SegmentedControlRow(
@@ -189,7 +197,10 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
                             },
                           ),
 
-                          const Divider(height: 24, color: AppColors.divider),
+                          Divider(
+                            height: 24,
+                            color: isDark ? const Color(0xFF2B293E) : AppColors.divider,
+                          ),
 
                           // Bass Boost
                           _SegmentedControlRow(
@@ -264,9 +275,15 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: isDark
+                            ? const Color(0xFF1B1A28)
+                            : AppColors.background,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.cardBorder),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF2B293E)
+                              : AppColors.cardBorder,
+                        ),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +316,7 @@ class _BeatSyncScreenState extends ConsumerState<BeatSyncScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 36),
                   ],
                 ),
               ),

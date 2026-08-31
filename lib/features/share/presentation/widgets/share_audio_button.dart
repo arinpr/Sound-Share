@@ -90,6 +90,8 @@ class _ShareAudioButtonState extends State<ShareAudioButton>
         return 'Sharing Audio';
       case AudioSharingState.stopping:
         return 'Stopping...';
+      case AudioSharingState.unavailable:
+        return 'Connect a Device to Share';
       default:
         return 'Share Audio';
     }
@@ -136,7 +138,7 @@ class _ShareAudioButtonState extends State<ShareAudioButton>
                             ]
                           : AppGradients.primaryButton(radius: 18).boxShadow,
                     )
-                  : AppGradients.disabledButton(radius: 18),
+                  : AppGradients.disabledButtonOf(context, radius: 18),
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
