@@ -7,6 +7,7 @@ import 'package:soundshare/core/widgets/skeleton_loader.dart';
 import 'package:soundshare/app/theme/app_colors.dart';
 import 'package:soundshare/app/theme/app_text_styles.dart';
 import 'package:soundshare/core/widgets/animated_widgets.dart';
+import 'package:soundshare/features/bluetooth/domain/bluetooth_device_model.dart';
 import 'package:soundshare/features/bluetooth/domain/bluetooth_providers.dart';
 import 'package:soundshare/features/audio_sharing/domain/audio_sharing_providers.dart';
 import 'package:soundshare/features/audio_sharing/domain/audio_sharing_service.dart';
@@ -58,11 +59,12 @@ class ShareScreen extends ConsumerWidget {
                       ),
 
                     if (btEnabled) ...[
-                      // Your audio card
+                      // Audio Source card (This Phone)
                       ConnectedAudioCard(
+                        deviceType: BluetoothDeviceType.phone,
                         deviceName: connectedDevices.isNotEmpty
-                            ? 'Galaxy Buds 2 Pro'
-                            : null,
+                            ? 'Broadcasting to ${connectedDevices.length} ${connectedDevices.length == 1 ? 'device' : 'devices'}'
+                            : 'This Phone (Media Audio)',
                         isConnected: btEnabled,
                       ),
 

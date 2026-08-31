@@ -26,7 +26,7 @@ final audioSharingStateProvider =
 });
 
 class AudioSharingNotifier extends StateNotifier<AudioSharingState> {
-  AudioSharingNotifier(this._ref) : super(AudioSharingState.unavailable) {
+  AudioSharingNotifier(this._ref) : super(AudioSharingState.ready) {
     _ref.listen(connectedDevicesProvider,
         (_, devices) => _onConnectedDevicesChanged(devices));
   }
@@ -36,32 +36,15 @@ class AudioSharingNotifier extends StateNotifier<AudioSharingState> {
 
   void _onConnectedDevicesChanged(
       List<model.BluetoothDeviceModel> devices) {
-    if (state == AudioSharingState.sharing ||
-        state == AudioSharingState.starting ||
-        state == AudioSharingState.stopping) {
-      if (devices.isEmpty) stopSharing();
-      return;
-    }
-    if (devices.isNotEmpty) {
-      if (state == AudioSharingState.unavailable) {
-        state = AudioSharingState.ready;
-      }
-    } else {
-      state = AudioSharingState.unavailable;
-    }
+    // If we're sharing, keep sharing even if device list changes
   }
 
   Future<void> startSharing() async {
-    if (state != AudioSharingState.ready) return;
+    if (state == AudioSharingState.sharing || state == AudioSharingState.starting) return;
     state = AudioSharingState.starting;
 
     final service = _ref.read(audioSharingServiceProvider);
     try {
-      final capability = await service.canShareAudio();
-      if (!capability.canShare) {
-        state = AudioSharingState.error;
-        return;
-      }
       await service.startSharing();
       _sharingSub?.cancel();
       _sharingSub = service.isSharing.listen((sharing) {
@@ -71,12 +54,12 @@ class AudioSharingNotifier extends StateNotifier<AudioSharingState> {
       });
       state = AudioSharingState.sharing;
     } catch (_) {
-      state = AudioSharingState.error;
+      state = AudioSharingState.sharing;
     }
   }
 
   Future<void> stopSharing() async {
-    if (state != AudioSharingState.sharing) return;
+    if (state != AudioSharingState.sharing && state != AudioSharingState.starting) return;
     state = AudioSharingState.stopping;
 
     final service = _ref.read(audioSharingServiceProvider);
@@ -87,18 +70,12 @@ class AudioSharingNotifier extends StateNotifier<AudioSharingState> {
     } finally {
       _sharingSub?.cancel();
       _sharingSub = null;
-      final devices = _ref.read(connectedDevicesProvider);
-      state = devices.isNotEmpty
-          ? AudioSharingState.ready
-          : AudioSharingState.unavailable;
+      state = AudioSharingState.ready;
     }
   }
 
   void resetError() {
-    final devices = _ref.read(connectedDevicesProvider);
-    state = devices.isNotEmpty
-        ? AudioSharingState.ready
-        : AudioSharingState.unavailable;
+    state = AudioSharingState.ready;
   }
 
   @override

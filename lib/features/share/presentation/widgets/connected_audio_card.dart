@@ -5,15 +5,17 @@ import 'package:soundshare/core/widgets/animated_widgets.dart';
 import 'package:soundshare/core/widgets/bluetooth_device_icon.dart';
 import 'package:soundshare/features/bluetooth/domain/bluetooth_device_model.dart';
 
-/// Card showing the user's currently active audio device.
+/// Card showing the user's currently active audio source device.
 class ConnectedAudioCard extends StatelessWidget {
   const ConnectedAudioCard({
     super.key,
+    this.deviceType = BluetoothDeviceType.phone,
     this.deviceName,
     this.batteryLevel,
     this.isConnected = false,
   });
 
+  final BluetoothDeviceType deviceType;
   final String? deviceName;
   final int? batteryLevel;
   final bool isConnected;
@@ -36,9 +38,9 @@ class ConnectedAudioCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Device icon
+          // Device icon (Mobile Phone)
           BluetoothDeviceIcon(
-            type: BluetoothDeviceType.earbuds,
+            type: deviceType,
             size: 28,
             isConnected: isConnected,
           ),
@@ -50,14 +52,14 @@ class ConnectedAudioCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Your audio', style: AppTextStyles.headingSmall),
+                Text('Audio Source', style: AppTextStyles.headingSmall),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     AnimatedStatusBadge(isActive: isConnected, size: 7),
                     const SizedBox(width: 5),
                     Text(
-                      isConnected ? 'Connected to' : 'Not connected',
+                      isConnected ? 'This Phone • Ready' : 'Not Connected',
                       style: AppTextStyles.statusSuccess.copyWith(
                         color: isConnected
                             ? AppColors.success
@@ -68,7 +70,7 @@ class ConnectedAudioCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  deviceName ?? 'No device connected',
+                  deviceName ?? 'This Phone (Media Audio)',
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -77,8 +79,8 @@ class ConnectedAudioCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   isConnected
-                      ? 'You are listening'
-                      : 'Connect a Bluetooth device',
+                      ? 'Ready to share audio stream'
+                      : 'Turn on Bluetooth to share audio',
                   style: AppTextStyles.bodyMedium,
                 ),
               ],
