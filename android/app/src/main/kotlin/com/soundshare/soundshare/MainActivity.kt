@@ -17,13 +17,22 @@ class MainActivity : FlutterActivity() {
     private val btChannel = "com.soundshare/bluetooth"
     private val beatSyncChannel = "com.soundshare/beatsync"
     private val beatSyncEventsChannel = "com.soundshare/beatsync_events"
+    private val spatialAudioChannel = "com.soundshare/spatial_audio"
+    private val spatialAudioEventsChannel = "com.soundshare/spatial_audio_events"
 
     private var beatSyncEngine: BeatSyncNativeEngine? = null
+    private var spatialAudioEngine: SpatialAudioNativeEngine? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
         beatSyncEngine = BeatSyncNativeEngine(applicationContext)
+        spatialAudioEngine = SpatialAudioNativeEngine(applicationContext)
+
+        // Spatial Audio Channels
+        val spatialMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, spatialAudioChannel)
+        val spatialEventChannel = EventChannel(flutterEngine.dartExecutor.binaryMessenger, spatialAudioEventsChannel)
+        spatialAudioEngine?.registerChannels(spatialMethodChannel, spatialEventChannel)
 
         // BeatSync Event Channel
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, beatSyncEventsChannel)
@@ -133,11 +142,9 @@ class MainActivity : FlutterActivity() {
         val reason: String
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+ can theoretically share to multiple A2DP via AudioManager routing
             canShare = true
             reason = "android_audio_routing"
         } else {
-            // Older Android: audio routing to two simultaneous BT outputs is not supported
             canShare = false
             reason = "android_version_unsupported"
         }
@@ -186,11 +193,9 @@ class MainActivity : FlutterActivity() {
             val adapter = btManager?.adapter ?: return devices
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                // Handled via flutter_blue_plus in Dart
                 return devices
             }
 
-            // Legacy approach for pre-S
             val connectedDevices = adapter.bondedDevices ?: return devices
             connectedDevices.forEach { device ->
                 devices.add(
@@ -203,13 +208,13 @@ class MainActivity : FlutterActivity() {
                 )
             }
         } catch (e: Exception) {
-            // Return empty list on any error
         }
         return devices
     }
 
     override fun onDestroy() {
         beatSyncEngine?.stopAnalysis()
+        spatialAudioEngine?.dispose()
         super.onDestroy()
     }
 }

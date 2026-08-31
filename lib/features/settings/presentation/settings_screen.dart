@@ -11,6 +11,7 @@ import '../../../features/audio_sharing/domain/audio_sharing_providers.dart';
 import '../../../features/audio_sharing/domain/audio_sharing_service.dart';
 import 'package:soundshare/core/utils/app_haptics.dart';
 import '../../../features/beatsync/domain/beatsync_providers.dart';
+import '../../../features/spatial_audio/domain/spatial_audio_providers.dart';
 import 'widgets/about_soundshare_sheet.dart';
 import 'widgets/privacy_policy_sheet.dart';
 import 'widgets/rate_app_dialog.dart';
@@ -175,6 +176,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       : 'Off',
                                   style: AppTextStyles.labelMedium.copyWith(
                                     color: ref.watch(beatSyncSettingsProvider).enabled
+                                        ? AppColors.purple
+                                        : AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 18,
+                                  color: AppColors.textMuted,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        _Divider(),
+                        InkWell(
+                          onTap: () {
+                            AppHaptics.light();
+                            context.push('/spatial_audio');
+                          },
+                          child: _SettingsRow(
+                            icon: Icons.spatial_audio_rounded,
+                            iconColor: AppColors.purple,
+                            label: '3D Spatial Audio',
+                            subtitle: 'Immersive sound around you',
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  ref.watch(spatialAudioSettingsProvider).enabled
+                                      ? 'On'
+                                      : 'Off',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: ref.watch(spatialAudioSettingsProvider).enabled
                                         ? AppColors.purple
                                         : AppColors.textMuted,
                                     fontWeight: FontWeight.w600,

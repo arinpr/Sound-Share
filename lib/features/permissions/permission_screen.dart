@@ -52,8 +52,10 @@ class _PermissionScreenState extends State<PermissionScreen> {
               Container(
                 width: 88,
                 height: 88,
-                decoration: const BoxDecoration(
-                  color: AppColors.purpleLight,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF26243A)
+                      : AppColors.purpleLight,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

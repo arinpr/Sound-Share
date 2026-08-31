@@ -16,7 +16,6 @@ import 'widgets/bluetooth_device_card.dart';
 import 'widgets/connected_devices_panel.dart';
 import 'widgets/share_audio_button.dart';
 import '../../beatsync/presentation/widgets/beatsync_card.dart';
-import '../../../app/theme/theme_provider.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 
 class ShareScreen extends ConsumerWidget {
